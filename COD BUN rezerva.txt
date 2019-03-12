@@ -1,0 +1,253 @@
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <fstream>
+#include <utility>
+#include <vector>
+#include <algorithm>
+#include <mutex>
+
+using namespace std;
+
+std::mutex m;
+
+int orientare(pair<int, int> p, pair<int, int> q, pair<int, int> r)
+{
+	int val = (q.second - p.second) * (r.first - q.first)
+		- (q.first - p.first) * (r.second - q.second);
+	if (val == 0)
+	{
+		return 0;
+	}
+	return (val > 0) ? 1 : 2; /// stanga 1 dr 2
+}
+
+
+int main()
+{
+    ifstream f("date.in");
+	int n;
+	f >> n;
+	int x, y;
+	vector<pair<int, int> > a;
+	for (int i = 0; i < n; i++)
+	{
+		f >> x >> y;
+		a.push_back(make_pair(x, y));
+	}
+	f.close();
+
+	vector<pair<int, int> > l;
+	l.push_back(a[0]);
+	l.push_back(a[1]);
+	int k = 0;
+	for (int i = 2; i < n; i++)
+	{
+		l.push_back(a[i]);
+		while (l.size() > 2)
+		{
+			int x = orientare(l[i - 2 - k], l[i - k - 1], l[i - k]);
+			if (x != 2)
+			{
+				l[i - k - 1] = l[i - k];
+				l.pop_back();
+				k++;
+			}
+			else
+				break;
+		}
+	}
+
+
+	vector<pair<int, int> > fs;   /// ACOPERIREA SUPERIOARA
+	fs.push_back(a[n-1]);
+	fs.push_back(a[n-2]);
+	k = 0;
+	int t = 0;
+	for (int i = n-3; i >= 0; i--)
+	{
+		fs.push_back(a[i]);
+		while (fs.size() > 2)
+		{
+			//int x = orientare(fs[i - 1 - k], fs[i - k], fs[i + 1 - k]);
+			int x = orientare(fs[t-k], fs[t+1-k], fs[t+2-k]);
+
+			if (x != 2)
+			{
+				fs[t+1-k] = fs[t+2-k];
+				fs.pop_back();
+				k++;
+			}
+			else
+				break;
+		}
+		t++;
+	}
+
+
+    sf::CircleShape cerc[l.size()+fs.size()];
+    pair<int, int> coord[l.size()+fs.size()];
+
+    int nrcerc = 0;
+    //int stanga = l[0].first;
+    float shiftare = 0.5 * 5;
+	for(auto x : l){
+        cout << x.first << " " << x.second << endl;
+
+        x.first = (x.first*5)+400;
+        x.second = 300 - x.second*5;
+        coord[nrcerc].first =  x.first-shiftare;
+        coord[nrcerc].second =  x.second-shiftare;
+
+        cerc[nrcerc].setRadius(3);
+        cerc[nrcerc].setPointCount(5);
+        cerc[nrcerc].setPosition(x.first, x.second);
+        nrcerc++;
+	}
+	int skip = 1;
+	fs.pop_back();
+	for(auto xx : fs){
+        if(skip){
+            skip = 0;
+            continue;
+        }
+        cout << xx.first << " " << xx.second << endl;
+        xx.first = (xx.first*5)+400;
+        xx.second = 300 - xx.second*5;
+
+        coord[nrcerc].first =  xx.first-shiftare;
+        coord[nrcerc].second =  xx.second-shiftare;
+
+        cerc[nrcerc].setRadius(3);
+        cerc[nrcerc].setPointCount(5);
+        cerc[nrcerc].setPosition(xx.first, xx.second);
+        nrcerc++;
+	}
+
+	cout << endl;
+/*
+    // Create the main window
+    sf::RenderWindow app(sf::VideoMode(800, 600), "SFML window");
+
+
+
+//        sf::CircleShape cerc(5);
+//        cerc.setPointCount(50);
+//        cerc.setPosition(400, 300);
+
+	// Start the game loop
+    while (app.isOpen())
+    {
+        // Process events
+        sf::Event event;
+        while (app.pollEvent(event))
+        {
+            // Close window : exit
+            if (event.type == sf::Event::Closed)
+                app.close();
+        }
+
+        // Clear screen
+        app.clear();
+
+        // Draw the sprite
+        //app.draw(sprite);
+
+        //app.draw(line, 2, sf::Lines);
+        //app.draw(cerc);
+        for(int i=0; i<nrcerc; i++){
+            app.draw(cerc[i]);
+        }
+
+//         for(int i=0; i<nrcerc-1 i++){
+//            sf::Vertex line[]{
+//            sf::Vertex(sf::Vector2f(cerc[i], 4)),
+//            sf::Vertex(sf::Vector2f(24, 14))
+//            };
+//        }
+
+
+        // Update the window
+        app.display();
+    }
+*/
+    sf::RenderWindow app2(sf::VideoMode(800, 600), "SFML window");
+
+    int j = 0;
+    while (app2.isOpen())
+    {
+        // Process events
+        sf::Event event;
+        while (app2.pollEvent(event))
+        {
+            // Close window : exit
+            if (event.type == sf::Event::Closed)
+                app2.close();
+
+
+        }
+
+        // Clear screen
+        app2.clear();
+
+        for(int i=0; i<n; i++){
+            sf::CircleShape cerc3(3);
+            cerc3.setPosition(a[i].first*5 + 400-shiftare, 300 - a[i].second*5-shiftare);
+            app2.draw(cerc3);
+        }
+
+            for(int i=0; i<nrcerc; i++){
+                if(i < nrcerc){
+                    sf::CircleShape cerc2(4);
+                    cerc2.setFillColor(sf::Color(0, 255, 0));
+                    cerc2.setPosition(coord[i].first, coord[i].second);
+                    app2.draw(cerc2);
+                }
+            }
+
+
+         for(int i=0; i<j; i++){
+            if(i < nrcerc - 1){
+                sf::Vertex line[]{
+                sf::Vertex(sf::Vector2f(cerc[i].getPosition().x, cerc[i].getPosition().y)),
+                sf::Vertex(sf::Vector2f(cerc[i+1].getPosition().x, cerc[i+1].getPosition().y))
+            };
+
+            app2.draw(line, 2, sf::Lines);
+            }
+         }
+
+//            sf::Clock clock;
+//            while(clock.getElapsedTime().asSeconds() < 0.1f){app2.clear();}
+
+            //system("pause");
+
+
+       // }
+            if(j == nrcerc){
+                sf::Vertex line[]{
+                sf::Vertex(sf::Vector2f(cerc[nrcerc-1].getPosition().x, cerc[nrcerc-1].getPosition().y)),
+                sf::Vertex(sf::Vector2f(cerc[0].getPosition().x, cerc[0].getPosition().y))
+                };
+                app2.draw(line, 2, sf::Lines);
+            }
+        j++;
+        // Update the window
+        app2.display();
+        //system("pause");
+
+        sf::Clock clock;
+        clock.restart();
+        while(clock.getElapsedTime().asSeconds() < 1.0f){}
+
+         if(j == nrcerc+1){
+            clock.restart();
+            while(clock.getElapsedTime().asSeconds() < 5.0f){}
+            app2.close();
+         }
+    }
+
+
+
+    return EXIT_SUCCESS;
+}
+
