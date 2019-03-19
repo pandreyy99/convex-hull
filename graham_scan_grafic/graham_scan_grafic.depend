@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1544978820 source:c:\users\maria\onedrive\desktop\fmi\geometrie computationala\graham_scan_grafic\main.cpp
+	<iostream>
+	<fstream>
+	<utility>
+	<vector>
+	<algorithm>
+
